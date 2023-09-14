@@ -12,16 +12,22 @@ from sklearn.utils import shuffle
 
 def create_model():
     # Input layers
-    input_640x480 = tf.keras.Input(shape=(200, 200, 3), name='input_640x480')
+    input_640x480 = tf.keras.Input(shape=(640, 480, 3), name='input_640x480')
     input_50x50 = tf.keras.Input(shape=(20, 20, 3), name='input_50x50')
     input_values = tf.keras.Input(shape=(4,), name='input_values')
+    transfer_layers = tf.keras.applications.EfficientNetB0(include_top=False)
+    transfer_layers.trainable=False
 
     # 640x480 image
-    conv1_640 = tf.keras.layers.Conv2D(32, 3, activation='relu')(input_640x480)
-    conv2_640 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv1_640)
-    pool_640 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2_640)
+    pool_640 = transfer_layers(input_640x480)
     flattened_640 = tf.keras.layers.Flatten()(pool_640)
-    dense_640 = tf.keras.layers.Dense(128, activation='relu')(flattened_640)
+
+    # 640x480 image
+    # conv1_640 = tf.keras.layers.Conv2D(32, 3, activation='relu')(input_640x480)
+    # conv2_640 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv1_640)
+    # pool_640 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2_640)
+    # flattened_640 = tf.keras.layers.Flatten()(pool_640)
+    # dense_640 = tf.keras.layers.Dense(128, activation='relu')(flattened_640)
 
     #  50x50 image
     conv1_50 = tf.keras.layers.Conv2D(16, 3, activation='relu')(input_50x50)
@@ -50,6 +56,7 @@ tf.keras.utils.plot_model(model,to_file='model.png')
 
 
 import os
+import sys
 path="/Users/erdemkok/Desktop/AITest/images/"
 path2="/Users/erdemkok/Desktop/AITest/areas/"
 nesneler = os.listdir(path)
@@ -57,7 +64,7 @@ nesneler2 = os.listdir(path2)
 print("Nesneler ->",nesneler)
 NesneImages2 = []
 NesneImages = []
-#os.remove("/Users/erdemkok/Desktop/AITest/areas/.DS_Store")
+# #os.remove("/Users/erdemkok/Desktop/AITest/areas/.DS_Store")
 for img_isim in os.listdir(path):
     
     img_url = path+img_isim
@@ -65,7 +72,7 @@ for img_isim in os.listdir(path):
     
     
     img = cv2.imread(img_url)
-    img1=cv2.resize(img,(200,200))
+    img1=cv2.resize(img,(640,480))
     NesneImages2.append(img1)
     #img = cv2.resize(img,(20,20))
     # #img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -84,7 +91,7 @@ for img_isim in os.listdir(path2):
     # # img = img/255
     NesneImages.append(img)
     
-print("BURSa",len(NesneImages),len(NesneImages2))
+print("BURSA",len(NesneImages),len(NesneImages2))
 NesneImages=np.array(NesneImages)
 NesneImages2=np.array(NesneImages2)
 print(type(NesneImages2),type(NesneImages2[0]))
@@ -113,11 +120,16 @@ X=[]
 x2=[]
 a=cv2.imread("/Users/erdemkok/Desktop/AITest/images/1.jpeg")
 
-a=cv2.resize(a,(200,200))
+a=cv2.resize(a,(480,640))
+a.reshape(480,640,3)
 X.append(a)
+
 b=cv2.resize(a,(20,20))
+b.reshape(20,20,3)
+print("Image_type",type(b))
 x2.append(b)
 X=np.array(X)
+print("X",X.shape)
 x2=np.array(x2)
 ar1=[]
 ar=np.array([0.5,0.3,0.6,0.2])
@@ -125,19 +137,20 @@ ar1.append(ar)
 ar1=np.array(ar1)
 print(type(X),type(ar),ar)
 num_samples = 1000
-image_640x480 = np.random.random((num_samples, 200, 200, 3))
-image_50x50 = np.random.random((num_samples, 20, 20, 3))
-input_values = np.random.random((55, 4))
-labels = np.random.random((55, 4))
-print(labels[0],type(image_50x50[0]))
+image_640x480 = np.random.random((num_samples, 640, 480, 3))        # ([(np.array),(np.array)])np.array
+image_50x50 = np.random.random((num_samples, 20, 20, 3))            # ([(np.array),(np.array)])np.array
+input_values = np.random.random((num_samples, 4))                   # ([(np.array),(np.array)])np.array
+labels = np.random.random((num_samples, 4))                         # ([(np.array),(np.array)])np.array
+print(labels[0],type(image_50x50[0]),type(image_50x50),type(input_values),type(input_values[0]))
+#sys.exit()
 # cv2.imshow("1",image_640x480[0])
 # cv2.waitKey(0)
 # print(image_640x480),
-#model.fit(x =[X, x2, ar1],y =ar1,batch_size=32,epochs=50,verbose=1)
+model.fit(x =[X, x2, ar1],y =ar1,batch_size=32,epochs=50,verbose=1)
 # import sys
-# sys.exit()
-#model.fit(x =[image_640x480, image_50x50, input_values],y =labels,batch_size=32,epochs=50,verbose=1)
-
+sys.exit()
+model.fit(x =[image_640x480, image_50x50, input_values],y =labels,batch_size=32,epochs=50,verbose=1)
+sys.exit()
 inputt=[]
 file_path = '/Users/erdemkok/Desktop/AITest/readme.txt'  # Replace with the actual file path
 
